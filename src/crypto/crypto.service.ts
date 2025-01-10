@@ -26,7 +26,7 @@ export class CryptoService {
     }
   }
 
-  private async fetchCryptoData(coins: string[]): Promise<any> {
+  async fetchCryptoData(coins: string[]): Promise<any> {
     try {
       const response = await axios.get(this.apiUrl, {
         params: {
@@ -43,12 +43,14 @@ export class CryptoService {
         throw new Error(`Failed to fetch data for coins: ${coins.join(', ')}`);
       } else {
         this.logger.error(`Unexpected error: ${error.message}`);
-        throw new Error('An unexpected error occurred while fetching cryptocurrency data.');
+        throw new Error(
+          'An unexpected error occurred while fetching cryptocurrency data.',
+        );
       }
     }
   }
 
-  private async storeCryptoData(coins: string[], data: any): Promise<void> {
+  async storeCryptoData(coins: string[], data: any): Promise<void> {
     for (const coin of coins) {
       const record = {
         coin,
