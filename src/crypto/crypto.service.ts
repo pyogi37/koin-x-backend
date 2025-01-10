@@ -14,7 +14,7 @@ export class CryptoService {
     @InjectModel(Crypto.name) private cryptoModel: Model<CryptoDocument>,
   ) {}
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_2ND_HOUR)
   async fetchAndStoreCryptoData() {
     try {
       this.logger.log('Fetching cryptocurrency data...');
@@ -26,7 +26,7 @@ export class CryptoService {
     }
   }
 
-  private async fetchCryptoData(coins: string[]): Promise<any> {
+  async fetchCryptoData(coins: string[]): Promise<any> {
     try {
       const response = await axios.get(this.apiUrl, {
         params: {
@@ -43,12 +43,14 @@ export class CryptoService {
         throw new Error(`Failed to fetch data for coins: ${coins.join(', ')}`);
       } else {
         this.logger.error(`Unexpected error: ${error.message}`);
-        throw new Error('An unexpected error occurred while fetching cryptocurrency data.');
+        throw new Error(
+          'An unexpected error occurred while fetching cryptocurrency data.',
+        );
       }
     }
   }
 
-  private async storeCryptoData(coins: string[], data: any): Promise<void> {
+  async storeCryptoData(coins: string[], data: any): Promise<void> {
     for (const coin of coins) {
       const record = {
         coin,
@@ -58,6 +60,37 @@ export class CryptoService {
       };
       await this.cryptoModel.create(record);
       this.logger.log(`Saved data for ${coin}: ${JSON.stringify(record)}`);
+    }
+  }
+
+  async getPriceStandardDeviation(coin: string): Promise<number> {
+    try {
+      const records = await this.cryptoModel
+        .find({ coin })
+        .sort({ createdAt: -1 })
+        .limit(100)
+        .exec();
+
+      if (records.length === 0) {
+        throw new Error(`No records found for coin: ${coin}`);
+      }
+
+      const prices = records.map((record) => record.price);
+      const mean =
+        prices.reduce((acc, price) => acc + price, 0) / prices.length;
+
+      const variance =
+        prices.reduce((acc, price) => acc + Math.pow(price - mean, 2), 0) /
+        (prices.length - 1);
+
+      const standardDeviation = Math.sqrt(variance);
+
+      return standardDeviation;
+    } catch (error) {
+      this.logger.error(
+        `Error calculating standard deviation for ${coin}: ${error.message}`,
+      );
+      throw error;
     }
   }
 }
