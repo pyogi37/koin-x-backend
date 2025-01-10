@@ -8,6 +8,32 @@ This API fetches real-time cryptocurrency data (Bitcoin, Matic, Ethereum) includ
 - Provides real-time cryptocurrency data via API.
 - Calculates the standard deviation of the price for the last 100 records.
 
+## Test APIs
+
+To test the API, use the following deployed link and `curl` commands.
+
+#### Test Latest Data
+
+To fetch the latest stats for Bitcoin:
+
+```bash
+curl "http://13.127.104.30/stats?coin=bitcoin"
+```
+
+#### Test Standard Deviation
+To fetch the price deviation for the last 100 records for Bitcoin:
+
+```bash
+curl "http://13.127.104.30/stats/deviation?coin=bitcoin"
+```
+Example output:
+
+```json
+{
+    "deviation": 4082.48
+}
+```
+
 ## API Endpoints
 
 ### 1. **GET /api/v1/stats**
@@ -49,3 +75,6 @@ GET /api/v1/deviation?coin=bitcoin
     "deviation": 4082.48
 }
 ```
+
+
+
